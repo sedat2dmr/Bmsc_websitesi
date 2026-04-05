@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { Check, ChevronLeft, ChevronRight, Upload, Globe } from "lucide-react";
 
 // ─── TRANSLATIONS ───────────────────────────────────────────────────────────
@@ -940,171 +941,29 @@ export default function PartnerEvaluationPage() {
         {/* Logo + heading */}
         <div className="relative flex flex-col items-center justify-center text-center px-6 pt-28 pb-20">
 
-          {/* ── BMSC SVG LOGO ANIMATION (Happy Horizon style) ── */}
-          <div className="mb-10 flex flex-col items-center gap-3">
-            {/* SVG Logo mark + wordmark */}
-            <svg
-              viewBox="0 0 320 72"
-              width="320"
-              height="72"
-              aria-label="BMSC Global"
-              className="overflow-visible"
+          {/* ── BMSC Logo (happyhorizon-style curtain reveal) ── */}
+          <div className="mb-10 overflow-hidden">
+            <motion.div
+              initial={{ y: 48, opacity: 0 }}
+              animate={logoReady ? { y: 0, opacity: 1 } : { y: 48, opacity: 0 }}
+              transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0 }}
             >
-              {/* ── LOGO MARK (diamond with B) ── */}
-              <g transform="translate(0, 4)">
-                {/* Outer diamond outline — draws in first */}
-                <motion.polygon
-                  points="32,2 62,32 32,62 2,32"
-                  fill="none"
-                  stroke="#1e2148"
-                  strokeWidth="3"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={logoReady ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
-                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0 }}
-                />
-                {/* Orange fill — bottom-left triangle */}
-                <motion.polygon
-                  points="2,32 32,62 32,32"
-                  fill="#ffaf30"
-                  initial={{ opacity: 0, scale: 0.6 }}
-                  animate={logoReady ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.6 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.7 }}
-                  style={{ transformOrigin: "17px 47px" }}
-                />
-                {/* Orange — left triangle */}
-                <motion.polygon
-                  points="2,32 32,2 32,32"
-                  fill="#ffaf30"
-                  fillOpacity="0.7"
-                  initial={{ opacity: 0 }}
-                  animate={logoReady ? { opacity: 1 } : { opacity: 0 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.85 }}
-                />
-                {/* Navy fill — right half */}
-                <motion.polygon
-                  points="32,2 62,32 32,32"
-                  fill="#1e2148"
-                  initial={{ opacity: 0 }}
-                  animate={logoReady ? { opacity: 1 } : { opacity: 0 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.9 }}
-                />
-                <motion.polygon
-                  points="32,62 62,32 32,32"
-                  fill="#1e2148"
-                  fillOpacity="0.6"
-                  initial={{ opacity: 0 }}
-                  animate={logoReady ? { opacity: 1 } : { opacity: 0 }}
-                  transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.95 }}
-                />
-                {/* B letter */}
-                <motion.text
-                  x="32"
-                  y="42"
-                  textAnchor="middle"
-                  fontSize="28"
-                  fontWeight="900"
-                  fontFamily="Arial, sans-serif"
-                  fill="white"
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={logoReady ? { opacity: 1, y: 0 } : { opacity: 0, y: 5 }}
-                  transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 1.0 }}
-                >
-                  B
-                </motion.text>
-              </g>
-
-              {/* ── WORDMARK ── */}
-              {/* "BM" in orange */}
-              <motion.text
-                x="80"
-                y="46"
-                fontSize="34"
-                fontWeight="900"
-                fontFamily="Arial, sans-serif"
-                letterSpacing="1"
-                fill="#ffaf30"
-                initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
-                animate={
-                  logoReady
-                    ? { clipPath: "inset(0 0% 0 0)", opacity: 1 }
-                    : { clipPath: "inset(0 100% 0 0)", opacity: 0 }
-                }
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 1.05 }}
-              >
-                BM
-              </motion.text>
-              {/* "SC GLOBAL" in navy/white */}
-              <motion.text
-                x="130"
-                y="46"
-                fontSize="34"
-                fontWeight="900"
-                fontFamily="Arial, sans-serif"
-                letterSpacing="1"
-                fill="white"
-                initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
-                animate={
-                  logoReady
-                    ? { clipPath: "inset(0 0% 0 0)", opacity: 1 }
-                    : { clipPath: "inset(0 100% 0 0)", opacity: 0 }
-                }
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 1.15 }}
-              >
-                SC GLOBAL
-              </motion.text>
-
-              {/* "UK" in orange (subtitle) */}
-              <motion.text
-                x="80"
-                y="64"
-                fontSize="13"
-                fontWeight="700"
-                fontFamily="Arial, sans-serif"
-                letterSpacing="3"
-                fill="#ffaf30"
-                initial={{ opacity: 0 }}
-                animate={logoReady ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.5, delay: 1.55 }}
-              >
-                UK
-              </motion.text>
-              {/* " LIMITED" in white/dim */}
-              <motion.text
-                x="103"
-                y="64"
-                fontSize="13"
-                fontWeight="400"
-                fontFamily="Arial, sans-serif"
-                letterSpacing="3"
-                fill="rgba(255,255,255,0.5)"
-                initial={{ opacity: 0 }}
-                animate={logoReady ? { opacity: 1 } : { opacity: 0 }}
-                transition={{ duration: 0.5, delay: 1.65 }}
-              >
-                LIMITED
-              </motion.text>
-
-              {/* Underline that draws in */}
-              <motion.line
-                x1="80"
-                y1="68"
-                x2="320"
-                y2="68"
-                stroke="#ffaf30"
-                strokeWidth="1.5"
-                strokeOpacity="0.4"
-                initial={{ pathLength: 0 }}
-                animate={logoReady ? { pathLength: 1 } : { pathLength: 0 }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 1.4 }}
+              <Image
+                src="/images/bmsc-logo.png"
+                alt="BMSC Global"
+                width={280}
+                height={78}
+                className="object-contain brightness-0 invert"
+                priority
               />
-            </svg>
+            </motion.div>
           </div>
 
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: logoReady ? 1 : 0 }}
-            transition={{ delay: 1.7, duration: 0.6 }}
+            transition={{ delay: 1.0, duration: 0.6 }}
             className="flex items-center gap-4 mb-5"
           >
             <div className="h-px w-12 bg-[#ffaf30]/40" />
@@ -1118,7 +977,7 @@ export default function PartnerEvaluationPage() {
           <motion.h1
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: logoReady ? 1 : 0, y: logoReady ? 0 : 24 }}
-            transition={{ delay: 1.8, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ delay: 1.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-wide leading-tight max-w-3xl"
           >
             {t.heroTitle}
@@ -1127,7 +986,7 @@ export default function PartnerEvaluationPage() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: logoReady ? 1 : 0 }}
-            transition={{ delay: 2.0, duration: 0.7 }}
+            transition={{ delay: 1.3, duration: 0.7 }}
             className="text-white/45 mt-4 text-sm max-w-lg leading-relaxed"
           >
             {t.heroSubtitle}
