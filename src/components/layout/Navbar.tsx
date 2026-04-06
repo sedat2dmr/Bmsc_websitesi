@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,8 +33,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  // 'hidden' → 'intro' (B mark in, then full logo wipe) → 'idle' (scroll-responsive)
-  const [logoPhase, setLogoPhase] = useState<"hidden" | "intro" | "idle">("hidden");
+  // 'hidden' → 'intro' (B mark in, then full logo wipe) → 'shimmer' (glint sweep) → 'idle'
+  const [logoPhase, setLogoPhase] = useState<"hidden" | "intro" | "shimmer" | "idle">("hidden");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,9 +50,16 @@ export default function Navbar() {
 
   useEffect(() => {
     if (logoPhase !== "intro") return;
-    // 2200ms animation + 150ms buffer → switch to idle (scroll-responsive) state
-    const t2 = setTimeout(() => setLogoPhase("idle"), 2350);
+    // 1600ms intro animation → shimmer phase
+    const t2 = setTimeout(() => setLogoPhase("shimmer"), 1600);
     return () => clearTimeout(t2);
+  }, [logoPhase]);
+
+  useEffect(() => {
+    if (logoPhase !== "shimmer") return;
+    // 800ms shimmer sweep → idle (scroll-responsive)
+    const t3 = setTimeout(() => setLogoPhase("idle"), 800);
+    return () => clearTimeout(t3);
   }, [logoPhase]);
 
   useEffect(() => {
@@ -74,63 +81,94 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between" style={{ height: "72px" }}>
-          {/* Logo — happyhorizon pattern:
-               page load  : B mark fades in → full logo wipes in
-               scrolled   : full logo → B mark only (compact)
-               back to top: B mark → full logo again            */}
-          <Link href="/" className="flex-shrink-0 overflow-hidden">
-            <motion.div
-              initial={{
-                clipPath: "inset(0 74% 0 0 round 1px)",
-                opacity: 0,
-                scale: 0.82,
-                filter: "blur(7px)",
-              }}
-              animate={
-                logoPhase === "intro"
-                  ? {
-                      clipPath: [
-                        "inset(0 74% 0 0 round 1px)",
-                        "inset(0 74% 0 0 round 1px)",
-                        "inset(0 0% 0 0 round 1px)",
-                      ],
-                      opacity: [0, 1, 1],
-                      scale: [0.82, 1, 1],
-                      filter: ["blur(7px)", "blur(0px)", "blur(0px)"],
-                    }
-                  : logoPhase === "idle"
-                  ? {
-                      clipPath: scrolled
-                        ? "inset(0 74% 0 0 round 1px)"
-                        : "inset(0 0% 0 0 round 1px)",
-                      opacity: 1,
-                      scale: 1,
-                      filter: "blur(0px)",
-                    }
-                  : {}
-              }
-              transition={
-                logoPhase === "intro"
-                  ? {
-                      duration: 2.2,
-                      times: [0, 0.3, 1],
-                      ease: [[0.22, 1, 0.36, 1], [0.16, 1, 0.3, 1]],
-                    }
-                  : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
-              }
-            >
-              <Image
-                src="/images/bmsc-logo.png"
-                alt="BMSC Global"
-                width={160}
-                height={44}
-                className={cn(
-                  "object-contain transition-all duration-300",
-                  scrolled ? "brightness-100" : "brightness-0 invert"
+          {/* Logo — page load: B mark springs in → full logo wipes in → glint sweep
+               idle scrolled  : full logo → B mark only (compact)
+               idle top       : full logo                               */}
+          <Link href="/" className="flex-shrink-0">
+            <div className="relative overflow-hidden">
+              <motion.div
+                initial={{
+                  clipPath: "inset(0 74% 0 0 round 1px)",
+                  opacity: 0,
+                  scale: 0.88,
+                  filter: "blur(6px)",
+                }}
+                animate={
+                  logoPhase === "intro"
+                    ? {
+                        clipPath: [
+                          "inset(0 74% 0 0 round 1px)",
+                          "inset(0 74% 0 0 round 1px)",
+                          "inset(0 0% 0 0 round 1px)",
+                        ],
+                        opacity: [0, 1, 1],
+                        scale: [0.88, 1, 1],
+                        filter: ["blur(6px)", "blur(0px)", "blur(0px)"],
+                      }
+                    : logoPhase === "shimmer"
+                    ? {
+                        clipPath: "inset(0 0% 0 0 round 1px)",
+                        opacity: 1,
+                        scale: 1,
+                        filter: "blur(0px)",
+                      }
+                    : logoPhase === "idle"
+                    ? {
+                        clipPath: scrolled
+                          ? "inset(0 74% 0 0 round 1px)"
+                          : "inset(0 0% 0 0 round 1px)",
+                        opacity: 1,
+                        scale: 1,
+                        filter: "blur(0px)",
+                      }
+                    : {}
+                }
+                transition={
+                  logoPhase === "intro"
+                    ? {
+                        duration: 1.55,
+                        times: [0, 0.28, 1],
+                        ease: [[0.22, 1, 0.36, 1], [0.16, 1, 0.3, 1]],
+                      }
+                    : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+                }
+              >
+                <Image
+                  src="/images/bmsc-logo.png"
+                  alt="BMSC Global"
+                  width={160}
+                  height={44}
+                  className={cn(
+                    "object-contain transition-all duration-300",
+                    scrolled ? "brightness-100" : "brightness-0 invert"
+                  )}
+                  priority
+                />
+              </motion.div>
+
+              {/* Glint sweep — plays once after reveal, then disappears */}
+              <AnimatePresence>
+                {logoPhase === "shimmer" && (
+                  <motion.div
+                    key="glint"
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0"
+                    initial={{ x: "-110%" }}
+                    animate={{ x: "210%" }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      x: { duration: 0.65, ease: [0.4, 0.14, 0.3, 1] },
+                      opacity: { duration: 0.2 },
+                    }}
+                    style={{
+                      background:
+                        "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.12) 38%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.12) 62%, transparent 80%)",
+                      mixBlendMode: "overlay",
+                    }}
+                  />
                 )}
-                priority
-              />
-            </motion.div>
+              </AnimatePresence>
+            </div>
           </Link>
 
           {/* Desktop Nav */}
