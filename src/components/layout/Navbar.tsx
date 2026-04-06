@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,12 +33,18 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [logoReady, setLogoReady] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLogoReady(true), 250);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -61,17 +68,50 @@ export default function Navbar() {
         <div className="flex items-center justify-between" style={{ height: "72px" }}>
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
-            <Image
-              src="/images/bmsc-logo.png"
-              alt="BMSC Global"
-              width={160}
-              height={44}
-              className={cn(
-                "object-contain transition-all duration-300",
-                scrolled ? "brightness-100" : "brightness-0 invert"
-              )}
-              priority
-            />
+            {/* Phase 1 → B mark appears (blur+scale in)
+                Phase 2 → BMSC GLOBAL UK LIMITED wipes in left→right */}
+            <motion.div
+              initial={{
+                clipPath: "inset(0 74% 0 0 round 1px)",
+                opacity: 0,
+                scale: 0.82,
+                filter: "blur(7px)",
+              }}
+              animate={
+                logoReady
+                  ? {
+                      clipPath: [
+                        "inset(0 74% 0 0 round 1px)",
+                        "inset(0 74% 0 0 round 1px)",
+                        "inset(0 0% 0 0 round 1px)",
+                      ],
+                      opacity: [0, 1, 1],
+                      scale: [0.82, 1, 1],
+                      filter: ["blur(7px)", "blur(0px)", "blur(0px)"],
+                    }
+                  : {}
+              }
+              transition={{
+                duration: 2.2,
+                times: [0, 0.3, 1],
+                ease: [
+                  [0.22, 1, 0.36, 1],
+                  [0.16, 1, 0.3, 1],
+                ],
+              }}
+            >
+              <Image
+                src="/images/bmsc-logo.png"
+                alt="BMSC Global"
+                width={160}
+                height={44}
+                className={cn(
+                  "object-contain transition-all duration-300",
+                  scrolled ? "brightness-100" : "brightness-0 invert"
+                )}
+                priority
+              />
+            </motion.div>
           </Link>
 
           {/* Desktop Nav */}
