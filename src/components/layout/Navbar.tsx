@@ -81,56 +81,34 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between" style={{ height: "72px" }}>
-          {/* Logo — page load: B mark springs in → full logo wipes in → glint sweep
+          {/* Logo — page load: spring bounce up → gold shimmer sweep → idle
                idle scrolled  : full logo → B mark only (compact)
                idle top       : full logo                               */}
           <Link href="/" className="flex-shrink-0">
             <div className="relative overflow-hidden">
               <motion.div
-                initial={{
-                  clipPath: "inset(0 74% 0 0 round 1px)",
-                  opacity: 0,
-                  scale: 0.88,
-                  filter: "blur(6px)",
-                }}
+                initial={{ opacity: 0, y: 16, scale: 0.85, filter: "blur(8px)" }}
                 animate={
-                  logoPhase === "intro"
-                    ? {
-                        clipPath: [
-                          "inset(0 74% 0 0 round 1px)",
-                          "inset(0 74% 0 0 round 1px)",
-                          "inset(0 0% 0 0 round 1px)",
-                        ],
-                        opacity: [0, 1, 1],
-                        scale: [0.88, 1, 1],
-                        filter: ["blur(6px)", "blur(0px)", "blur(0px)"],
-                      }
-                    : logoPhase === "shimmer"
-                    ? {
-                        clipPath: "inset(0 0% 0 0 round 1px)",
-                        opacity: 1,
-                        scale: 1,
-                        filter: "blur(0px)",
-                      }
+                  logoPhase === "intro" || logoPhase === "shimmer"
+                    ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
                     : logoPhase === "idle"
                     ? {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        filter: "blur(0px)",
                         clipPath: scrolled
                           ? "inset(0 74% 0 0 round 1px)"
                           : "inset(0 0% 0 0 round 1px)",
-                        opacity: 1,
-                        scale: 1,
-                        filter: "blur(0px)",
                       }
-                    : {}
+                    : { opacity: 0, y: 16, scale: 0.85, filter: "blur(8px)" }
                 }
                 transition={
                   logoPhase === "intro"
-                    ? {
-                        duration: 1.55,
-                        times: [0, 0.28, 1],
-                        ease: [[0.22, 1, 0.36, 1], [0.16, 1, 0.3, 1]],
-                      }
-                    : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+                    ? { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+                    : logoPhase === "idle"
+                    ? { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+                    : { duration: 0 }
                 }
               >
                 <Image
@@ -146,24 +124,20 @@ export default function Navbar() {
                 />
               </motion.div>
 
-              {/* Glint sweep — plays once after reveal, then disappears */}
+              {/* Gold shimmer sweep — visible on both white (inverted) & dark logo */}
               <AnimatePresence>
                 {logoPhase === "shimmer" && (
                   <motion.div
                     key="glint"
                     aria-hidden
                     className="pointer-events-none absolute inset-0"
-                    initial={{ x: "-110%" }}
-                    animate={{ x: "210%" }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      x: { duration: 0.65, ease: [0.4, 0.14, 0.3, 1] },
-                      opacity: { duration: 0.2 },
-                    }}
+                    initial={{ x: "-130%", opacity: 0 }}
+                    animate={{ x: "230%", opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                    transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
                     style={{
                       background:
-                        "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.12) 38%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.12) 62%, transparent 80%)",
-                      mixBlendMode: "overlay",
+                        "linear-gradient(100deg, transparent 15%, rgba(255,175,48,0.08) 35%, rgba(255,175,48,0.55) 50%, rgba(255,175,48,0.08) 65%, transparent 85%)",
                     }}
                   />
                 )}
