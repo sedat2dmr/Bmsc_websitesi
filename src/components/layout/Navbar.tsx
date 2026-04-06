@@ -33,7 +33,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [logoReady, setLogoReady] = useState(false);
+  // 'hidden' → 'intro' (B mark in, then full logo wipe) → 'idle' (scroll-responsive)
+  const [logoPhase, setLogoPhase] = useState<"hidden" | "intro" | "idle">("hidden");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,9 +44,16 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => setLogoReady(true), 250);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setLogoPhase("intro"), 250);
+    return () => clearTimeout(t1);
   }, []);
+
+  useEffect(() => {
+    if (logoPhase !== "intro") return;
+    // 2200ms animation + 150ms buffer → switch to idle (scroll-responsive) state
+    const t2 = setTimeout(() => setLogoPhase("idle"), 2350);
+    return () => clearTimeout(t2);
+  }, [logoPhase]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -66,10 +74,11 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between" style={{ height: "72px" }}>
-          {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            {/* Phase 1 → B mark appears (blur+scale in)
-                Phase 2 → BMSC GLOBAL UK LIMITED wipes in left→right */}
+          {/* Logo — happyhorizon pattern:
+               page load  : B mark fades in → full logo wipes in
+               scrolled   : full logo → B mark only (compact)
+               back to top: B mark → full logo again            */}
+          <Link href="/" className="flex-shrink-0 overflow-hidden">
             <motion.div
               initial={{
                 clipPath: "inset(0 74% 0 0 round 1px)",
@@ -78,7 +87,7 @@ export default function Navbar() {
                 filter: "blur(7px)",
               }}
               animate={
-                logoReady
+                logoPhase === "intro"
                   ? {
                       clipPath: [
                         "inset(0 74% 0 0 round 1px)",
@@ -89,16 +98,26 @@ export default function Navbar() {
                       scale: [0.82, 1, 1],
                       filter: ["blur(7px)", "blur(0px)", "blur(0px)"],
                     }
+                  : logoPhase === "idle"
+                  ? {
+                      clipPath: scrolled
+                        ? "inset(0 74% 0 0 round 1px)"
+                        : "inset(0 0% 0 0 round 1px)",
+                      opacity: 1,
+                      scale: 1,
+                      filter: "blur(0px)",
+                    }
                   : {}
               }
-              transition={{
-                duration: 2.2,
-                times: [0, 0.3, 1],
-                ease: [
-                  [0.22, 1, 0.36, 1],
-                  [0.16, 1, 0.3, 1],
-                ],
-              }}
+              transition={
+                logoPhase === "intro"
+                  ? {
+                      duration: 2.2,
+                      times: [0, 0.3, 1],
+                      ease: [[0.22, 1, 0.36, 1], [0.16, 1, 0.3, 1]],
+                    }
+                  : { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+              }
             >
               <Image
                 src="/images/bmsc-logo.png"
