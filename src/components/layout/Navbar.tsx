@@ -33,8 +33,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  // 'hidden' → 'intro' (B mark in, then full logo wipe) → 'shimmer' (glint sweep) → 'idle'
-  const [logoPhase, setLogoPhase] = useState<"hidden" | "intro" | "shimmer" | "idle">("hidden");
+  // 'hidden' → 'iconIn' (B mark slides down + fade) → 'textWipe' (text clip-path reveal) → 'shimmer' → 'idle'
+  const [logoPhase, setLogoPhase] = useState<"hidden" | "iconIn" | "textWipe" | "shimmer" | "idle">("hidden");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,22 +44,29 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setLogoPhase("intro"), 250);
-    return () => clearTimeout(t1);
+    const t = setTimeout(() => setLogoPhase("iconIn"), 200);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
-    if (logoPhase !== "intro") return;
-    // 1600ms intro animation → shimmer phase
-    const t2 = setTimeout(() => setLogoPhase("shimmer"), 1600);
-    return () => clearTimeout(t2);
+    if (logoPhase !== "iconIn") return;
+    // icon slide-down lasts ~650ms → start text wipe
+    const t = setTimeout(() => setLogoPhase("textWipe"), 650);
+    return () => clearTimeout(t);
+  }, [logoPhase]);
+
+  useEffect(() => {
+    if (logoPhase !== "textWipe") return;
+    // text wipe lasts ~550ms → shimmer
+    const t = setTimeout(() => setLogoPhase("shimmer"), 550);
+    return () => clearTimeout(t);
   }, [logoPhase]);
 
   useEffect(() => {
     if (logoPhase !== "shimmer") return;
-    // 800ms shimmer sweep → idle (scroll-responsive)
-    const t3 = setTimeout(() => setLogoPhase("idle"), 800);
-    return () => clearTimeout(t3);
+    // shimmer sweep lasts ~800ms → idle
+    const t = setTimeout(() => setLogoPhase("idle"), 800);
+    return () => clearTimeout(t);
   }, [logoPhase]);
 
   useEffect(() => {
@@ -81,33 +88,36 @@ export default function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between" style={{ height: "72px" }}>
-          {/* Logo — page load: spring bounce up → gold shimmer sweep → idle
+          {/* Logo — page load: B icon slides down → text wipes left-to-right → gold shimmer → idle
                idle scrolled  : full logo → B mark only (compact)
                idle top       : full logo                               */}
           <Link href="/" className="flex-shrink-0">
             <div className="relative overflow-hidden">
               <motion.div
-                initial={{ opacity: 0, y: 16, scale: 0.85, filter: "blur(8px)" }}
+                initial={{ opacity: 0, y: -16, clipPath: "inset(0 74% 0 0 round 1px)" }}
                 animate={
-                  logoPhase === "intro" || logoPhase === "shimmer"
-                    ? { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
-                    : logoPhase === "idle"
-                    ? {
+                  logoPhase === "hidden"
+                    ? { opacity: 0, y: -16, clipPath: "inset(0 74% 0 0 round 1px)" }
+                    : logoPhase === "iconIn"
+                    ? { opacity: 1, y: 0, clipPath: "inset(0 74% 0 0 round 1px)" }
+                    : logoPhase === "textWipe" || logoPhase === "shimmer"
+                    ? { opacity: 1, y: 0, clipPath: "inset(0 0% 0 0 round 1px)" }
+                    : /* idle */
+                      {
                         opacity: 1,
                         y: 0,
-                        scale: 1,
-                        filter: "blur(0px)",
                         clipPath: scrolled
                           ? "inset(0 74% 0 0 round 1px)"
                           : "inset(0 0% 0 0 round 1px)",
                       }
-                    : { opacity: 0, y: 16, scale: 0.85, filter: "blur(8px)" }
                 }
                 transition={
-                  logoPhase === "intro"
-                    ? { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
+                  logoPhase === "iconIn"
+                    ? { duration: 0.65, ease: [0.22, 1, 0.36, 1] }
+                    : logoPhase === "textWipe"
+                    ? { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }
                     : logoPhase === "idle"
-                    ? { duration: 0.5, ease: [0.22, 1, 0.36, 1] }
+                    ? { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
                     : { duration: 0 }
                 }
               >
@@ -124,7 +134,7 @@ export default function Navbar() {
                 />
               </motion.div>
 
-              {/* Gold shimmer sweep — visible on both white (inverted) & dark logo */}
+              {/* Gold shimmer sweep */}
               <AnimatePresence>
                 {logoPhase === "shimmer" && (
                   <motion.div
