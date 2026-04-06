@@ -941,12 +941,16 @@ export default function PartnerEvaluationPage() {
         {/* Logo + heading */}
         <div className="relative flex flex-col items-center justify-center text-center px-6 pt-28 pb-20">
 
-          {/* ── BMSC Logo (happyhorizon-style curtain reveal) ── */}
+          {/* ── BMSC Logo — blur-slide reveal (21st.dev AnimatedGroup pattern) ── */}
           <div className="mb-10 overflow-hidden">
             <motion.div
-              initial={{ y: 48, opacity: 0 }}
-              animate={logoReady ? { y: 0, opacity: 1 } : { y: 48, opacity: 0 }}
-              transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1], delay: 0 }}
+              initial={{ y: 40, opacity: 0, filter: "blur(14px)", scale: 0.96 }}
+              animate={
+                logoReady
+                  ? { y: 0, opacity: 1, filter: "blur(0px)", scale: 1 }
+                  : { y: 40, opacity: 0, filter: "blur(14px)", scale: 0.96 }
+              }
+              transition={{ type: "spring", bounce: 0.22, duration: 1.3, delay: 0.1 }}
             >
               <Image
                 src="/images/bmsc-logo.png"
